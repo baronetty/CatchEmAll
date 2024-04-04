@@ -12,17 +12,51 @@ struct CreaturesListView: View {
     
     var body: some View {
         NavigationStack {
-            List(creaturesVM.creaturesArray, id: \.self) { creature in
+            ZStack {
+                List(0..<creaturesVM.creaturesArray.count, id: \.self) { index in
+                    
+                    LazyVStack {
+                        NavigationLink {
+                            DetailView(creature: creaturesVM.creaturesArray[index])
+                        } label: {
+                            Text("\(index + 1). \(creaturesVM.creaturesArray[index].name.capitalized)")
+                                .font(.title2)
+                        }
+                    }
+                    .onAppear {
+                        if let lastCreature = creaturesVM.creaturesArray.last {
+                            if creaturesVM.creaturesArray[index].name == lastCreature.name && creaturesVM.urlString.hasPrefix("http") {
+                                Task {
+                                    await creaturesVM.getData()
+                                }
+                            }
+                        }
+                    }
+                }
+                .listStyle(.plain)
+                .navigationTitle("Pokemon")
+                .toolbar {
+                    ToolbarItem(placement: .bottomBar) {
+                        Button {
+                            Task {
+                                await creaturesVM.loadAll()
+                            }
+                        } label: {
+                            Text("Load all")
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .status) {
+                        Text("\(creaturesVM.creaturesArray.count) of \(creaturesVM.count)")
+                    }
+                }
                 
-                NavigationLink {
-                    DetailView(creature: creature)
-                } label: {
-                    Text(creature.name.capitalized)
-                        .font(.title2)
+                if creaturesVM.isLoading {
+                    ProgressView()
+                        .tint(.red)
+                        .scaleEffect(2)
                 }
             }
-            .listStyle(.plain)
-            .navigationTitle("Pokemon")
         }
         .task {
             await creaturesVM.getData()
