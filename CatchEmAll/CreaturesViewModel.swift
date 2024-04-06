@@ -51,6 +51,17 @@ class CreaturesViewModel: ObservableObject {
         }
     }
     
+    func loadNextIfNeeded(creature: Creature) async {
+        guard let lastCreature = creaturesArray.last else {
+            return
+        }
+        if creature.id == lastCreature.id && urlString.hasPrefix("http") {
+            Task {
+                await getData()
+            }
+        }
+    }
+    
     func loadAll() async {
         guard urlString.hasPrefix("http") else { return }
         

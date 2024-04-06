@@ -25,25 +25,7 @@ struct DetailView: View {
                 .padding(.bottom)
             
             HStack {
-                AsyncImage(url: URL(string: creatureDetailVM.imageURL)) { image in
-                    image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 96, height: 96)
-                        .background(.white)
-                        .clipShape(.rect(cornerRadius: 16))
-                        .shadow(radius: 8, x: 5, y: 5)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(.gray.opacity(0.5), lineWidth: 1)
-                        }
-                        .padding(.trailing)
-                } placeholder: {
-                    Rectangle()
-                        .foregroundStyle(.clear)
-                        .frame(width: 96, height: 96)
-                        .padding(.trailing)
-                }
+                creatureImage
                 
                 VStack(alignment: .leading) {
                     HStack(alignment: .top) {
@@ -75,6 +57,45 @@ struct DetailView: View {
         .task {
             creatureDetailVM.urlString = creature.url
             await creatureDetailVM.getData()
+        }
+    }
+}
+
+extension DetailView {
+    var creatureImage: some View {
+        AsyncImage(url: URL(string: creatureDetailVM.imageURL)) { phase in
+            if let image = phase.image { // we have a valid image
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 96, height: 96)
+                    .background(.white)
+                    .clipShape(.rect(cornerRadius: 16))
+                    .shadow(radius: 8, x: 5, y: 5)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(.gray.opacity(0.5), lineWidth: 1)
+                    }
+                    .padding(.trailing)
+            } else if phase.error != nil { // we have an error
+                Image(systemName: "questionmark.square.dashed")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 96, height: 96)
+                    .background(.white)
+                    .clipShape(.rect(cornerRadius: 16))
+                    .shadow(radius: 8, x: 5, y: 5)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(.gray.opacity(0.5), lineWidth: 1)
+                    }
+                    .padding(.trailing)
+            } else { // use a placeholder
+                Rectangle()
+                    .foregroundStyle(.clear)
+                    .frame(width: 96, height: 96)
+                    .padding(.trailing)
+            }
         }
     }
 }
